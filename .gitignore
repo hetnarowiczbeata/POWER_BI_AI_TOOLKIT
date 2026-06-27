@@ -1,0 +1,9 @@
+.vscode/
+*.tmp
+*.bak
+*.log
+*.gguf
+*.bin
+*.safetensors
+*.pyc
+.venv/
