@@ -1,9 +1,21 @@
 .vscode/
 *.tmp
 *.bak
+.backups/
 *.log
 *.gguf
 *.bin
 *.safetensors
 *.pyc
 .venv/
+.venv-1/
+__pycache__/
+services/config.py
+
+# Private implementation - keep out of public repo
+main.py
+run_agent.bat
+services/
+sample-model/
+docs/
+final_result.rm

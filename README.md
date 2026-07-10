@@ -1,66 +1,55 @@
-                 Power BI Desktop
-                        │
-                Export Semantic Model
-                      (TMDL)
-                        │
-                        ▼
-                 Visual Studio Code
-                        │
-                   Git Repository
-                        │
-                        ▼
-                  AI Agent (Cline)
-                        │
-             REST API (localhost:1234)
-                        │
-                        ▼
-                    LM Studio
-                        │
-                        ▼
-               Qwen2.5 Coder (LLM)
-                        │
-                        ▼
-      Review • Documentation • Optimization
+# Power BI AI Toolkit
 
+Public preview of a local AI workflow for reviewing Microsoft Power BI semantic models stored as PBIP/TMDL.
 
+The project explores how an assistant can inspect model metadata, reason about tables and measures, and support controlled changes to a semantic model. The full implementation is private; this repository intentionally exposes only a small, non-sensitive preview.
 
+## What This Preview Shows
 
+- The product idea and intended workflow.
+- A small illustrative code sample.
+- The public-facing architecture concept.
 
+## What Is Not Public
 
+The following parts are intentionally excluded:
 
+- TMDL parser internals.
+- Model analysis rules.
+- Measure suggestion engine.
+- TMDL editing and backup logic.
+- Prompt templates and local LLM integration details.
+- Sample Power BI project files.
+- Local configuration and model paths.
 
+## Concept
 
+```text
+Power BI PBIP/TMDL
+        |
+        v
+Local model scanner
+        |
+        v
+AI-assisted review
+        |
+        v
+User-approved suggestions
+        |
+        v
+Controlled TMDL changes
+```
 
-**POWER BI AI TOOLKIT**
+## Public Code Preview
 
-*AI-powered workflow for analyzing, documenting and optimizing Microsoft Power BI semantic models using TMDL, Git, VS Code and local LLMs.*
+See:
 
----
+```text
+public/preview.py
+```
 
-**Project Goal**
+This file is only a simplified preview. It does not include the production parser, analysis engine, or TMDL write logic.
 
-The goal of this project is to build a modern workflow for working with Power BI semantic models by combining:
+## Status
 
-- Microsoft Power BI
-- TMDL (Tabular Model Definition Language)
-- Git
-- Visual Studio Code
-- Local AI (LM Studio)
-- AI Agent (Cline)
-- Qwen2.5 Coder
-
-Instead of treating a `.pbix` file as a black box, this project demonstrates how to version, review and analyze semantic models using modern AI tools.
-
-\
-
-**Tech Stack**
-
-- Power BI Desktop
-- TMDL
-- Visual Studio Code
-- Git & GitHub
-- LM Studio
-- Cline
-- Qwen2.5 Coder
-
-
+Private proof of concept. Public repository content is limited on purpose.
