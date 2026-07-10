@@ -2,22 +2,25 @@
 
 Public preview of a local AI workflow for reviewing Microsoft Power BI semantic models stored as PBIP/TMDL.
 
-The project explores how an assistant can inspect model metadata, reason about tables and measures, and support controlled changes to a semantic model. The full implementation is private; this repository intentionally exposes only a small, non-sensitive preview.
+The project explores how an assistant can inspect model metadata, reason about tables and measures, and support controlled changes to a semantic model. The production implementation is private, but this repository shows a small public slice of the workflow.
 
 ## What This Preview Shows
 
 - The product idea and intended workflow.
-- A small illustrative code sample.
+- A readable public code sample.
+- Measure suggestions with dependencies.
+- Number-based user selection flow.
+- A read-only TMDL preview.
 - The public-facing architecture concept.
 
 ## What Is Not Public
 
 The following parts are intentionally excluded:
 
-- TMDL parser internals.
-- Model analysis rules.
-- Measure suggestion engine.
-- TMDL editing and backup logic.
+- Production TMDL parser internals.
+- Private model analysis rules.
+- Full measure suggestion engine.
+- TMDL editing, validation, and backup logic.
 - Prompt templates and local LLM integration details.
 - Sample Power BI project files.
 - Local configuration and model paths.
@@ -48,7 +51,19 @@ See:
 public/preview.py
 ```
 
-This file is only a simplified preview. It does not include the production parser, analysis engine, or TMDL write logic.
+This file includes a real, runnable public example of the selection flow:
+
+- example time intelligence suggestions,
+- automatic dependency handling,
+- TMDL measure block preview.
+
+It does not include the production parser, analysis engine, prompt logic, local LLM client, or model write logic.
+
+Run it with:
+
+```bash
+python public/preview.py
+```
 
 ## Status
 
