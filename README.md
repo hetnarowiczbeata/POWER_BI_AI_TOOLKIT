@@ -14,11 +14,7 @@ Projekt czyta strukturę modelu semantycznego z plików `.tmdl`, analizuje istni
 - przygotować kontrolowane zmiany TMDL dla nowych lub aktualizowanych miar,
 - dodać zależne miary automatycznie, jeżeli wybrana miara odwołuje się do innej brakującej propozycji.
 
-## Czego Teraz Nie Robi
 
-Agent nie jest już ogólnym narzędziem do przebudowy całego modelu Power BI.
-
-Nie traktuje jako głównego zadania:
 
 - Python 3.10 lub nowszy
 - Power BI Desktop z modelem zapisanym jako PBIP/TMDL
@@ -27,13 +23,8 @@ Nie traktuje jako głównego zadania:
 
 Instalacja zaleznosci:
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install openai python-dotenv
-```
 
-Konfiguracja lokalna znajduje sie w ignorowanym przez Git pliku `services/config.py`.
+
 
 Przykladowa zawartosc:
 
