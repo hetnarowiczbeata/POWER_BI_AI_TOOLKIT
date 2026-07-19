@@ -20,178 +20,191 @@ Agent nie jest już ogólnym narzędziem do przebudowy całego modelu Power BI.
 
 Nie traktuje jako głównego zadania:
 
-- projektowania relacji,
-- ukrywania kolumn,
-- opisywania tabel,
-- optymalizacji kardynalności,
-- zmian strukturalnych poza miarami DAX.
+- Python 3.10 lub nowszy
+- Power BI Desktop z modelem zapisanym jako PBIP/TMDL
+- LM Studio z wlaczonym lokalnym serwerem OpenAI-compatible API
+- model LLM, np. `qwen2.5-coder-14b-instruct`
 
-Relacje, kolumny i tabele są używane tylko jako kontekst potrzebny do poprawnych formuł DAX.
+Instalacja zaleznosci:
 
-## Workflow
-
-```text
-Power BI PBIP/TMDL
-        |
-        v
-Odczyt modelu semantycznego
-        |
-        v
-Analiza miar i zależności DAX
-        |
-        v
-Propozycje miar DAX
-        |
-        v
-Wybór użytkownika
-        |
-        v
-Kontrolowany zapis miar do TMDL
+```powershell
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install openai python-dotenv
 ```
 
-## Uruchomienie
+Konfiguracja lokalna znajduje sie w ignorowanym przez Git pliku `services/config.py`.
 
-Najprościej:
+Przykladowa zawartosc:
+
+```python
+from dotenv import load_dotenv
+
+load_dotenv()
+
+Uruchomienie:
 
 ```powershell
 .\run_agent.bat
 ```
 
-Ręcznie:
+albo:
 
 ```powershell
 .\.venv\Scripts\activate
 python main.py
 ```
 
-Po uruchomieniu zobaczysz:
+W konsoli wpisz pytanie, np.:
 
 ```text
+Jakie miary DAX warto dodac do tego modelu?
+```
+
+Po analizie agent pokaze liste proponowanych zmian. Mozesz wpisac numery, np. `1,3`, `wszystkie` albo `nie`. Obecnie automatycznie obslugiwane sa: dodanie miary, dodanie relacji, ukrycie kolumny i dodanie opisu tabeli.
+
+Aby zakonczyc prace, wpisz:
+
+```text
+exit
+```
+
+## Dokumentacja
+
+Pelny opis projektu, architektury, konfiguracji i przykladowego modelu znajduje sie w pliku:
+
+- [docs/DOKUMENTACJA.md](docs/DOKUMENTACJA.md)
+
+## Struktura repozytorium
+
+```text
+.
+|-- main.py
+|-- run_agent.bat
+|-- services/
+|   |-- agent.py
+|   |-- tmdl_editor.py
+|   |-- llm_client.py
+|   |-- tmdlreader.py
+|   `-- config.py          # lokalny, ignorowany przez Git
+|-- sample-model/
+|   `-- Amazon Delivery-pr.SemanticModel/
+|       `-- definition/
+|           |-- model.tmdl
+|           |-- relationships.tmdl
+|           `-- tables/
+`-- docs/
+    `-- DOKUMENTACJA.md
+```
+
+
+
+Wynik końcowy:
+
+
+Uruchamianie Power BI AI Agent...
+
 Power BI DAX Agent
 Wpisz 'exit' zeby zakonczyc
 
-Ja:
-```
+Ja: jakie miary time intelligence mozna stworzyc
 
-## Przykładowe Pytania
+Etap 1: sprawdzam miary i kontekst DAX...
 
-```text
-Które miary są nieużywane?
-```
+PLAN AGENTA
+Analizuje istniejace miary i kontekst dat, zeby zaproponowac miary time intelligence w DAX.
 
-```text
-Wypisz istniejące miary DAX.
-```
+DLACZEGO TE PLIKI
+Pliki wybrane lokalnie na podstawie typu pytania, nazw tabel i struktury modelu. LLM zostanie uzyty dopiero do analizy.
 
-```text
-Jakie miary DAX sugerujesz dla tego modelu?
-```
+WYBRANE PLIKI
+- relationships.tmdl
+- tables\dim_calendar.tmdl
+- tables\fct_data.tmdl
+- tables\Miary.tmdl
 
-```text
-Dodaj miary time intelligence: YTD, MTD i YoY.
-```
+Etap 2: analizuje DAX...
+Laczenie z lokalnym modelem LLM...
+Odpowiedz odebrana.
 
-```text
-Jak poprawić DAX dla SLA?
-```
+ANALIZA AGENTA
+1. Orders PY
+Powod: Porównanie zamówień z tym samym okresem w poprzednim roku (Year-over-Year) w celu oceny długoterminowego wzrostu.
+DAX: CALCULATE([Orders], SAMEPERIODLASTYEAR('dim_calendar'[Date]))
 
-## Tryb DAX-Only
+2. Orders YTD
+Powod: Obliczenie skumulowanej liczby zamówień od początku roku do bieżącej daty (Year-to-Date).
+DAX: TOTALYTD([Orders], 'dim_calendar'[Date])
 
-Jeżeli zapytasz o relacje, kolumny albo ogólną optymalizację modelu, agent nie będzie już próbował działać jak pełny modeler Power BI. Zamiast tego odpowie z perspektywy DAX albo poprosi o pytanie dotyczące miar.
+3. Orders MTD
+Powod: Obliczenie liczby zamówień od początku bieżącego miesiąca (Month-to-Date).
+DAX: TOTALMTD([Orders], 'dim_calendar'[Date])
 
-Przykład:
+4. Orders YoY
+Powod: Bezpośrednia wartość przyrostu zamówień w porównaniu do poprzedniego roku.
+DAX: [Orders] - [Orders PY]
 
-```text
-Które kolumny są nieużywane?
-```
+5. Orders YoY %
+Powod: Procentowy wzrost zamówień w porównaniu do poprzedniego roku, kluczowy wskaźnik efektywności.
+DAX: DIVIDE([Orders YoY], [Orders PY], 0)
 
-Agent potraktuje to jako temat poza głównym trybem i przypomni, że obsługuje miary, formuły DAX, zależności między miarami i użycie miar w raporcie.
+6. On-time orders YTD
+Powod: Skumulowana liczba zamówień dostarczonych na czas od początku roku, niezbędna do oceny spójności SLA.
+DAX: TOTALYTD([On-time orders.], 'dim_calendar'[Date])
 
-## Analiza Użycia Miar
+7. SLA YTD %
+Powod: Skumulowany procent zamówień dostarczonych na czas od początku roku, pokazujący długoterminową jakość usługi.
+DAX: DIVIDE([On-time orders YTD], [Orders YTD], 0)
 
-Dla pytania o nieużywane miary agent sprawdza:
+Czy przygotowac zmiany miar DAX do TMDL? Wpisz 'tak', zeby wybrac numery zmian, albo 'nie': tak
 
-- odwołania do miar w innych formułach DAX, np. `[Orders]`,
-- użycia miar w definicjach wizualizacji raportu JSON,
-- nazwy miar z tabel TMDL.
+Etap 3: przygotowuje zmiany miar DAX do TMDL...
 
-Wynik ma formę:
+PROPONOWANE ZMIANY DO WYBORU
 
-```text
-Miary bez jawnego uzycia:
-1. Nazwa miary (Tabela)
-2. Inna miara (Tabela)
-```
+[1] Dodaj Orders PY
+    Typ: measure | Ryzyko: low | Operacja: add_measure
+    Liczba zamowien w analogicznym okresie poprzedniego roku. Baza dla YoY.
 
-Uwaga: wynik oznacza brak jawnego użycia w analizowanych plikach. Miara nadal może być potrzebna, jeżeli jest używana poza raportem, w zewnętrznych narzędziach, zakładkach, tooltipach albo ręcznie przez użytkowników.
+[2] Dodaj Orders YTD
+    Typ: measure | Ryzyko: low | Operacja: add_measure
+    Skumulowana liczba zamowien od poczatku roku.
 
-## Konfiguracja
+[3] Dodaj Orders MTD
+    Typ: measure | Ryzyko: low | Operacja: add_measure
+    Skumulowana liczba zamowien od poczatku miesiaca.
 
-Konfiguracja znajduje się w:
+[4] Dodaj Orders QTD
+    Typ: measure | Ryzyko: low | Operacja: add_measure
+    Skumulowana liczba zamowien od poczatku kwartalu.
 
-```text
-services/config.py
-```
+[5] Dodaj Orders YoY
+    Typ: measure | Ryzyko: low | Operacja: add_measure
+    Roznica liczby zamowien wzgledem poprzedniego roku.
 
-Wymagane wartości:
+[6] Dodaj Orders YoY %
+    Typ: measure | Ryzyko: low | Operacja: add_measure
+    Procentowa zmiana liczby zamowien rok do roku.
 
-| Nazwa | Znaczenie |
-| --- | --- |
-| `MODEL` | nazwa lokalnego modelu LLM |
-| `BASE_URL` | adres lokalnego API zgodnego z OpenAI |
-| `API_KEY` | klucz dla klienta API, przy lokalnym LLM zwykle placeholder |
-| `SCIEZKA` | pełna ścieżka do folderu `.SemanticModel` |
+[7] Dodaj On-time orders YTD
+    Typ: measure | Ryzyko: low | Operacja: add_measure
+    Skumulowana liczba terminowych zamowien od poczatku roku.
 
-Przykład:
+[8] Dodaj SLA YTD %
+    Typ: measure | Ryzyko: low | Operacja: add_measure
+    SLA liczony narastajaco od poczatku roku.
 
-```python
-MODEL = "local-model"
-BASE_URL = "http://127.0.0.1:8080/v1"
-API_KEY = "llama.cpp"
-SCIEZKA = r"C:\...\Amazon Delivery-pr.SemanticModel"
-```
+Ktore zmiany chcesz zaimplementowac? Wpisz numery, np. 1,3, 'wszystkie' albo 'nie': 1,2,3
 
-## Struktura Projektu
+WYBRANE ZMIANY DO IMPLEMENTACJI
+Numery: 1, 2, 3
+- [1] Dodaj Orders PY (add_measure)
+- [2] Dodaj Orders YTD (add_measure)
+- [3] Dodaj Orders MTD (add_measure)
 
-| Plik | Rola |
-| --- | --- |
-| `main.py` | interaktywny program CLI |
-| `services/agent.py` | logika agenta DAX, analiza miar i promptowanie LLM |
-| `services/tmdlreader.py` | odczyt plików TMDL |
-| `services/tmdl_editor.py` | kontrolowany zapis zmian do TMDL |
-| `services/llm_client.py` | komunikacja z lokalnym LLM |
-| `public/preview.py` | mały publiczny przykład przepływu wyboru sugestii |
-| `tests/test_dax_agent.py` | testy regresyjne trybu DAX-only |
+Czy na pewno zaimplementowac wybrane zmiany w TMDL? Wpisz 'tak' albo 'nie': tak
 
-## Bezpieczeństwo Zmian
-
-Agent nie zapisuje dowolnego tekstu wygenerowanego przez LLM. Zapis przechodzi przez `services/tmdl_editor.py`, który obsługuje kontrolowane operacje.
-
-W trybie DAX-only najważniejsza operacja to:
-
-| Operacja | Efekt |
-| --- | --- |
-| `add_measure` | dodaje albo aktualizuje miarę w pliku TMDL |
-
-Przed pierwszą edycją pliku tworzona jest kopia zapasowa w folderze `.backups`.
-
-## Testy
-
-Uruchomienie testów:
-
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests
-```
-
-Kontrola składni:
-
-```powershell
-.\.venv\Scripts\python.exe -m compileall main.py services tests
-```
-
-## Ograniczenia
-
-- Parser TMDL jest lekki i opiera się na strukturze tekstowej plików.
-- Analiza użycia miar wykrywa jawne referencje, nie gwarantuje pełnej semantycznej walidacji Power BI.
-- Formuły DAX wygenerowane przez LLM trzeba sprawdzić w Power BI Desktop.
-- Agent działa lokalnie, ale jakość odpowiedzi zależy od użytego modelu LLM.
+WYNIK ZAPISU TMDL
+[1] zastosowano: Zmieniono plik: tables\Miary.tmdl
+[2] zastosowano: Zmieniono plik: tables\Miary.tmdl
+[3] zastosowano: Zmieniono plik: tables\Miary.tmdl
