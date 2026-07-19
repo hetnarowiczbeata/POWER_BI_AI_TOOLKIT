@@ -16,56 +16,6 @@ Projekt czyta strukturę modelu semantycznego z plików `.tmdl`, analizuje istni
 
 
 
-- Python 3.10 lub nowszy
-- Power BI Desktop z modelem zapisanym jako PBIP/TMDL
-- LM Studio z wlaczonym lokalnym serwerem OpenAI-compatible API
-- model LLM, np. `qwen2.5-coder-14b-instruct`
-
-Instalacja zaleznosci:
-
-
-
-
-Przykladowa zawartosc:
-
-```python
-from dotenv import load_dotenv
-
-load_dotenv()
-
-Uruchomienie:
-
-```powershell
-.\run_agent.bat
-```
-
-albo:
-
-```powershell
-.\.venv\Scripts\activate
-python main.py
-```
-
-W konsoli wpisz pytanie, np.:
-
-```text
-Jakie miary DAX warto dodac do tego modelu?
-```
-
-Po analizie agent pokaze liste proponowanych zmian. Mozesz wpisac numery, np. `1,3`, `wszystkie` albo `nie`. Obecnie automatycznie obslugiwane sa: dodanie miary, dodanie relacji, ukrycie kolumny i dodanie opisu tabeli.
-
-Aby zakonczyc prace, wpisz:
-
-```text
-exit
-```
-
-## Dokumentacja
-
-Pelny opis projektu, architektury, konfiguracji i przykladowego modelu znajduje sie w pliku:
-
-- [docs/DOKUMENTACJA.md](docs/DOKUMENTACJA.md)
-
 ## Struktura repozytorium
 
 ```text
